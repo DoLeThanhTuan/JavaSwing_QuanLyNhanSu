@@ -28,7 +28,7 @@ public class NhanVienBienChe extends NhanVien{
 	public String toString() {
 		return "1, "+this.maNV+", "+this.hoTen+", "+df.format(this.ngayVaoCoQuan)+", "+this.gioiTinh+", "+this.soCM+", "+df.format(ngaySinh)+", "+this.heSoLuong;
 	}
-
+	
 	@Override
 	public double tinhPhuCap() {
 		return 0.1*(this.Luongcoban) + this.thamNien()>=10?500000:200000;

@@ -24,6 +24,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import Controller.QuanLyNhanVienController;
+import DAO.NhanVienDAO;
 import model.DanhSachNhanVienModel;
 import model.NhanVien;
 import model.NhanVienBienChe;
@@ -151,31 +152,31 @@ public class QuanLyNhanVienView extends JFrame {
 
 		rdobt_NVBC = new JRadioButton("Nhân viên biên chế");
 		rdobt_NVBC.addMouseListener(new MouseListener() {
-			
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				NVBC();
@@ -187,31 +188,31 @@ public class QuanLyNhanVienView extends JFrame {
 
 		rdobt_NVHD = new JRadioButton("Nhân viên hợp đồng");
 		rdobt_NVHD.addMouseListener(new MouseListener() {
-			
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				NVHD();
@@ -311,7 +312,7 @@ public class QuanLyNhanVienView extends JFrame {
 		tf_mucLuong.setBounds(484, 307, 160, 30);
 		tf_mucLuong.setEnabled(false);
 		this.add(tf_mucLuong);
-
+		this.hienThiDuLieuSQL();
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
@@ -367,6 +368,8 @@ public class QuanLyNhanVienView extends JFrame {
 					nv.getSoCM(), df.format(nv.getNgayVaoCoQuan()),
 					nv instanceof NhanVienBienChe ? ((NhanVienBienChe) nv).getHeSoLuong() : null,
 					nv instanceof NhanVienHopDong ? ((NhanVienHopDong) nv).getMucLuong() : null });
+			int kq = NhanVienDAO.getInstance().inserṭ̣(nv);
+			JOptionPane.showMessageDialog(this, "Có "+ kq+" dòng đã được thêm");
 		} else {
 			JOptionPane.showMessageDialog(this, "Nhập dữ liệu sai");
 		}
@@ -376,8 +379,10 @@ public class QuanLyNhanVienView extends JFrame {
 	public void XoaNV() {
 		DefaultTableModel tableModel = (DefaultTableModel) this.table.getModel();
 		int row_select = this.table.getSelectedRow();
-		String MNVXoa = (String) tableModel.getValueAt(row_select, 1);
+		String MNVXoa = (String) tableModel.getValueAt(row_select, 0);
 		this.model.xoaNV(MNVXoa);
+		int kq = NhanVienDAO.getInstance().delete(MNVXoa);
+		JOptionPane.showMessageDialog(this, "Có "+kq+" đã xóa");
 		tableModel.removeRow(row_select);
 	}
 
@@ -451,16 +456,18 @@ public class QuanLyNhanVienView extends JFrame {
 			this.table.setValueAt(((NhanVienHopDong) nv).getMucLuong(), row_selected, 7);
 		else
 			this.table.setValueAt(null, row_selected, 7);
+		int kq = NhanVienDAO.getInstance().update(nv);
+		JOptionPane.showMessageDialog(this, "Có "+kq +" đã thay đổi");
 		this.xoaForm();
 	}
 
 	public void Tim() {
 		int rowCount = this.table_Find.getRowCount();
-		for (int i = 0; i < rowCount; i++) {
-			this.table_Find.remove(0);
-		}
-		NhanVien nv = this.model.TimNV(this.tf_MNV.getText());
 		DefaultTableModel modelTable = (DefaultTableModel) this.table_Find.getModel();
+		for(int i = rowCount-1;i>=0;i--) {
+			modelTable.removeRow(i);
+		}
+		NhanVien nv = NhanVienDAO.getInstance().selectMaNV(this.tf_MNV.getText());
 		if (nv != null) {
 			modelTable.addRow(new Object[] { nv.getMaNV(), nv.getHoTen(), nv.getGioiTinh(), df.format(nv.getNgaySinh()),
 					nv.getSoCM(), df.format(nv.getNgayVaoCoQuan()),
@@ -479,14 +486,33 @@ public class QuanLyNhanVienView extends JFrame {
 		this.bt_Tim.setVisible(true);
 		this.bt_huy.setVisible(false);
 	}
+
 	public void NVBC() {
-			this.tf_mucLuong.setText("");
-			this.tf_hsLuong.setEnabled(true);
-			this.tf_mucLuong.setEnabled(false);
+		this.tf_mucLuong.setText("");
+		this.tf_hsLuong.setEnabled(true);
+		this.tf_mucLuong.setEnabled(false);
 	}
+
 	public void NVHD() {
-			this.tf_hsLuong.setText("");
-			this.tf_mucLuong.setEnabled(true);
-			this.tf_hsLuong.setEnabled(false);
+		this.tf_hsLuong.setText("");
+		this.tf_mucLuong.setEnabled(true);
+		this.tf_hsLuong.setEnabled(false);
+	}
+	public void hienThiDuLieuSQL() {
+		DefaultTableModel model_table = (DefaultTableModel) this.table.getModel();
+		this.model.LayDuLieuTuSQL();
+		ArrayList<NhanVien> list = this.model.getDsnv();
+		for (NhanVien nv: list) {
+			model_table.addRow(new Object[] {
+				nv.getMaNV(),
+				nv.getHoTen(),
+				nv.getGioiTinh(),
+				df.format(nv.getNgaySinh()),
+				nv.getSoCM(),
+				df.format(nv.getNgayVaoCoQuan()),
+				nv instanceof NhanVienBienChe? ((NhanVienBienChe)nv).getHeSoLuong() : null,
+				nv instanceof NhanVienHopDong? ((NhanVienHopDong)nv).getMucLuong() : null,
+			});
+		}
 	}
 }

@@ -11,6 +11,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import DAO.NhanVienDAO;
+
 public class DanhSachNhanVienModel implements IIO{
 	ArrayList<NhanVien> dsnv;
 
@@ -142,5 +144,8 @@ public class DanhSachNhanVienModel implements IIO{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	public void LayDuLieuTuSQL() {
+		this.dsnv = NhanVienDAO.getInstance().selectAll();
 	}
 }
